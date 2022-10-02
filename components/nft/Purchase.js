@@ -8,6 +8,7 @@ import {
 import { HiTag } from "react-icons/hi";
 import { IoMdWallet } from "react-icons/io";
 import toast, { Toaster } from "react-hot-toast";
+import Loading from "../Loading";
 
 const style = {
   button: `mr-8 flex items-center py-2 px-12 rounded-lg cursor-pointer`,
@@ -18,6 +19,7 @@ const style = {
 const MakeOffer = ({ isListed, selectedNft, listings }) => {
   const [selectedMarketNft, setSelectedMarketNft] = useState();
   const [enableButton, setEnableButton] = useState(false);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!listings || isListed === "false") return;
     (async () => {
@@ -71,13 +73,16 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
 
   const buyItem = async (id) => {
     try {
+      setLoading(true);
       await marketplace.buyoutListing(id, 1);
       confirmPurchase();
+      setLoading(false);
     } catch (err) {
       console.error(err);
       alert("Error purchasing asset");
     }
   };
+  if (loading) return <Loading />;
   return (
     <div className='flex h-20 w-full items-center rounded-lg border border-[#151c22] bg-[#303339] px-12'>
       <Toaster position='bottom-left' reverseOrder={false} />

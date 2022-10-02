@@ -15,6 +15,7 @@ import {
   useNFTs,
   useContract,
 } from "@thirdweb-dev/react";
+import Loading from "../../components/Loading";
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,
@@ -107,12 +108,7 @@ const Collection = () => {
   useEffect(() => {
     fetchCollectionData();
   }, [collectionId]);
-  if (isReadingNfts)
-    return (
-      <>
-        <h1>Loading</h1>
-      </>
-    );
+  if (isReadingNfts) return <Loading />;
   return (
     <div className='overflow-hidden'>
       <Header />
