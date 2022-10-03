@@ -17,9 +17,11 @@ const style = {
 };
 
 const MakeOffer = ({ isListed, selectedNft, listings }) => {
+  const address = useAddress();
   const [selectedMarketNft, setSelectedMarketNft] = useState();
   const [enableButton, setEnableButton] = useState(false);
   const [loading, setLoading] = useState(false);
+  var owner = selectedNft?.owner;
   useEffect(() => {
     if (!listings || isListed === "false") return;
     (async () => {
@@ -85,7 +87,7 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
   if (loading) return <Loading />;
   return (
     <div className='flex h-20 w-full items-center rounded-lg border border-[#151c22] bg-[#303339] px-12'>
-      <Toaster position='bottom-left' reverseOrder={false} />
+      <Toaster position='top-center' reverseOrder={false} />
       {isListed === "true" ? (
         <>
           <div
@@ -105,10 +107,16 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
           </div>
         </>
       ) : (
-        <div className={`${style.button} bg-[#2081e2] hover:bg-[#42a0ff]`}>
-          <IoMdWallet className={style.buttonIcon} />
-          <div className={style.buttonText}>List Item</div>
-        </div>
+        <>
+          {owner == address ? (
+            <div className={`${style.button} bg-[#2081e2] hover:bg-[#42a0ff]`}>
+              <IoMdWallet className={style.buttonIcon} />
+              <div className={style.buttonText}>List Item</div>
+            </div>
+          ) : (
+            <>Not Listed</>
+          )}
+        </>
       )}
     </div>
   );

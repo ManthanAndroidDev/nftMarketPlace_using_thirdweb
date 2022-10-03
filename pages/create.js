@@ -1,7 +1,13 @@
-import { useAddress, useMetamask, useNFTCollection } from "@thirdweb-dev/react";
+import {
+  useAddress,
+  useMetamask,
+  useNFTCollection,
+  useSigner,
+} from "@thirdweb-dev/react";
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import axios from "axios";
-import { useState } from "react";
-import styles from "../styles/Home.module.css";
+import { useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import Header from "../components/Header";
 import Loading from "../components/Loading";
 
@@ -16,37 +22,51 @@ const Create = () => {
   const address = useAddress();
   const connectUsingMetamask = useMetamask();
   const [name, setName] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(null);
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const signer = useSigner();
+  console.log(image);
   const collection = useNFTCollection(
     process.env.NEXT_PUBLIC_NFT_COLLECTION_ADDRESS
   );
-  const onChangeFile = (e) => {
-    setImage(e.target.files[0]);
-  };
+
+  const inputFileRef = useRef(null);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const res = await axios.post("/api/generate", { name, description, image });
+    const tw = new ThirdwebSDK(signer);
+    const upload = await tw.storage.upload(image);
+    console.log(upload);
+    const res = await axios.post("/api/generate", {
+      name,
+      description,
+      image: upload,
+    });
 
     const { signature } = res.data;
 
     await collection.signature.mint(signature);
 
-    alert("NFT Minted successfully!");
+    confirmMint();
     setDescription("");
     setImage("");
     setName("");
     setLoading(false);
   };
-
+  const confirmMint = (toastHandler = toast) =>
+    toastHandler.success(`Minting successful!`, {
+      style: {
+        background: "#04111d",
+        color: "#fff",
+      },
+    });
   return (
     <>
       <Header />
       <div className={style.Wrapper}>
+        <Toaster position='top-center' reverseOrder={false} />
         {address ? (
           <>
             {loading ? (
@@ -56,39 +76,52 @@ const Create = () => {
                 <form className={style.form} onSubmit={onSubmit}>
                   <div className='py-[15px] flex justify-between'>
                     Image URL:
-                    {/* <div class='rounded-[5px] flex items-center justify-center w-full py-[15px]'>
-                      <label class='flex flex-col w-full h-32 border-4 border-blue-200 border-dashed hover:bg-gray-100 hover:border-gray-300'>
-                        <div class='flex flex-col items-center justify-center pt-7'>
+                    <input
+                      className='hidden'
+                      type='file'
+                      name='myImage'
+                      onChange={(event) => {
+                        setImage(event.target.files[0]);
+                      }}
+                      ref={inputFileRef}
+                      accept='image/*,video/mp4,video/x-m4v,video/*'
+                    />
+                    {image == null ? (
+                      <div
+                        onClick={() => inputFileRef.current.click()}
+                        className='cursor-pointer	 text-center rounded-[5px] bg-white w-[248px] h-[24px]'
+                      >
+                        Click to upload Image or Video
+                      </div>
+                    ) : (
+                      <>
+                        <div className='	text-center rounded-[5px] bg-white w-[248px] h-fit'>
+                          {image?.name}
+                        </div>
+                        <div
+                          className='cursor-pointer'
+                          onClick={() => setImage(null)}
+                        >
                           <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            class='w-8 h-8 text-gray-400 group-hover:text-gray-600'
+                            className='w-6 h-6'
                             fill='none'
-                            viewBox='0 0 24 24'
                             stroke='currentColor'
+                            viewBox='0 0 24 24'
+                            xmlns='http://www.w3.org/2000/svg'
                           >
                             <path
-                              stroke-linecap='round'
-                              stroke-linejoin='round'
-                              stroke-width='2'
-                              d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
                             />
                           </svg>
-                          <p class='pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600'>
-                            Attach a file
-                          </p>
                         </div>
-                        <input type='file' onChange={onChangeFile} />
-                      </label>
-                    </div> */}
-                    <input
-                      type='text'
-                      value={image}
-                      onChange={(e) => setImage(e.target.value)}
-                      className='rounded-[5px]'
-                    />
+                      </>
+                    )}
                   </div>
                   <div className='py-[15px] flex justify-between'>
-                    Name:{" "}
+                    Name:
                     <input
                       type='text'
                       value={name}
@@ -96,8 +129,8 @@ const Create = () => {
                       className='rounded-[5px]'
                     />
                   </div>
-                  <div className='py-[15px]'>
-                    Description:{" "}
+                  <div className='py-[15px] flex justify-between'>
+                    Description:
                     <input
                       type='text'
                       value={description}
