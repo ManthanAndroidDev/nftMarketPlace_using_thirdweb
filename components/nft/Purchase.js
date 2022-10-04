@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import {
   useAddress,
   useMarketplace,
@@ -21,7 +22,8 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
   const [selectedMarketNft, setSelectedMarketNft] = useState();
   const [enableButton, setEnableButton] = useState(false);
   const [loading, setLoading] = useState(false);
-  var owner = selectedNft?.owner;
+  // console.log(selectedNft);
+  const router = useRouter();
   useEffect(() => {
     if (!listings || isListed === "false") return;
     (async () => {
@@ -108,8 +110,16 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
         </>
       ) : (
         <>
-          {owner == address ? (
-            <div className={`${style.button} bg-[#2081e2] hover:bg-[#42a0ff]`}>
+          {selectedNft?.owner == address ? (
+            <div
+              onClick={() => {
+                router.push({
+                  pathname: `/listItem/${Number(selectedNft.metadata.id._hex)}`,
+                  query: selectedNft,
+                });
+              }}
+              className={`${style.button} bg-[#2081e2] hover:bg-[#42a0ff]`}
+            >
               <IoMdWallet className={style.buttonIcon} />
               <div className={style.buttonText}>List Item</div>
             </div>
