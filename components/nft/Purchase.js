@@ -1,15 +1,10 @@
-import { useEffect, useState } from "react";
+import { useAddress, useMarketplace } from "@thirdweb-dev/react";
 import { useRouter } from "next/router";
-import {
-  useAddress,
-  useMarketplace,
-  useNFTs,
-  useContract,
-} from "@thirdweb-dev/react";
+import { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { HiTag } from "react-icons/hi";
 import { IoMdWallet } from "react-icons/io";
-import toast, { Toaster } from "react-hot-toast";
-import Loading from "../Loading";
+import LoadingComponent from "../LoadingComponent";
 
 const style = {
   button: `mr-8 flex items-center py-2 px-12 rounded-lg cursor-pointer`,
@@ -42,35 +37,24 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
 
     setEnableButton(true);
   }, [selectedMarketNft, selectedNft]);
-  const confirmPurchase = (toastHandler = toast) =>
+  const confirmPurchase = (toastHandler = toast) => {
     toastHandler.success(`Purchase successful!`, {
       style: {
         background: "#04111d",
         color: "#fff",
       },
     });
-
-  // const buyItem = async (
-  //   listingId = selectedMarketNft.id,
-  //   quantityDesired = selectedMarketNft.quantity,
-  //   module = marketPlaceModule
-  // ) => {
-  //   console.log(listingId, quantityDesired, module, "david");
-  //   // yo RAZA lets goooo!!!
-  //   //yo Qazi, ok
-  //   // sure okay about to run it...
-  //   // just clicked buy now...
-  //   // still error
-  //   // where can i see the contract address of the marketplace module
-  //   // in [nftId.js]
-  //   await module
-  //     .buyoutDirectListing({
-  //       listingId: listingId,
-  //       quantityDesired: 1,
-  //     })
-  //     .catch((error) => console.error(error));
-
-  // };
+    setLoading(false);
+  };
+  const errorPurchase = (toastHandler = toast) => {
+    toastHandler.error(`Error purchasing asset`, {
+      style: {
+        background: "#04111d",
+        color: "#fff",
+      },
+    });
+    setLoading(false);
+  };
   const marketplace = useMarketplace(
     "0xE073aAbD1E166Aa23d9562b9D4aB62b57Da9dE9e"
   );
@@ -80,13 +64,12 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
       setLoading(true);
       await marketplace.buyoutListing(id, 1);
       confirmPurchase();
-      setLoading(false);
     } catch (err) {
       console.error(err);
-      alert("Error purchasing asset");
+      errorPurchase();
     }
   };
-  if (loading) return <Loading />;
+  if (loading) return <LoadingComponent />;
   return (
     <div className='flex h-20 w-full items-center rounded-lg border border-[#151c22] bg-[#303339] px-12'>
       <Toaster position='top-center' reverseOrder={false} />
@@ -115,7 +98,6 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
               onClick={() => {
                 router.push({
                   pathname: `/listItem/${Number(selectedNft.metadata.id._hex)}`,
-                  query: selectedNft,
                 });
               }}
               className={`${style.button} bg-[#2081e2] hover:bg-[#42a0ff]`}
