@@ -21,7 +21,18 @@ const NFTImage = ({ selectedNft }) => {
         </div>
       </div>
       <div>
-        <img src={selectedNft?.metadata.image} />
+        {selectedNft?.metadata.image &&
+        selectedNft?.metadata.image.slice(-3) == "mp4" ? (
+          <>
+            <video autoPlay loop>
+              <source src={selectedNft?.metadata.image} />
+            </video>
+          </>
+        ) : (
+          <>
+            <img src={selectedNft?.metadata.image} />
+          </>
+        )}
       </div>
     </div>
   );
