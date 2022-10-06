@@ -44,9 +44,11 @@ const Header = () => {
         <Link href='/create'>
           <div className={style.headerItem}> Create </div>
         </Link>
+        <Link href="/myCoupons">
         <div className={style.headerIcon}>
           <CgProfile />
         </div>
+        </Link>
         <div className={style.headerIcon}>
           <MdOutlineAccountBalanceWallet />
         </div>
