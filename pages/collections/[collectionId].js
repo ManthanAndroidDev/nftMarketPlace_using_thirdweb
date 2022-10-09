@@ -1,21 +1,19 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import { useWeb3 } from "@3rdweb/hooks";
-import { client } from "../../lib/sanityClient";
-import { ThirdwebSDK } from "@3rdweb/sdk";
-import Header from "../../components/Header";
-import { CgWebsite } from "react-icons/cg";
-import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
-import { HiDotsVertical } from "react-icons/hi";
-import NFTCard from "../../components/NFTCard";
 import {
-  useAddress,
+  useContract,
   useMarketplace,
   useNFTs,
-  useContract,
+  useActiveListings,
 } from "@thirdweb-dev/react";
-import Loading from "../../components/Loading";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
+import { CgWebsite } from "react-icons/cg";
+import { HiDotsVertical } from "react-icons/hi";
+import Header from "../../components/Header";
+import LoadingComponent from "../../components/LoadingComponent";
+import LoadingFullScreen from "../../components/LoadingFullScreen";
+import NFTCard from "../../components/NFTCard";
+import { client } from "../../lib/sanityClient";
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,
@@ -45,40 +43,24 @@ const Collection = () => {
   const { collectionId } = router.query;
   const [collection, setCollection] = useState({});
   const [listings, setListings] = useState([]);
-  // console.log(listings);
+  console.log(listings);
   const { contract } = useContract(
     "0x63F80dA69eF8608A49D8E4883b4114F28DC5d47E"
   );
   const { data: nfts, isLoading: isReadingNfts } = useNFTs(contract);
-  // console.log(nfts);
   const marketplace = useMarketplace(
-    "0xE073aAbD1E166Aa23d9562b9D4aB62b57Da9dE9e"
+    "0x606879c4a436594Bf66113993B8B65C19675a0C7"
   );
-  // const nftModule = useMemo(() => {
-  //   if (!provider) return;
+  const { contract: marketplaceContract } = useContract(
+    "0x606879c4a436594Bf66113993B8B65C19675a0C7"
+  );
+  const {
+    data: marketplacelistings,
+    isLoading,
+    error,
+  } = useActiveListings(marketplaceContract);
+  console.log(isLoading);
 
-  //   const sdk = new ThirdwebSDK(provider.getSigner());
-  //   return sdk.getNFTModule(collectionId);
-  // }, [provider]);
-
-  // useEffect(() => {
-  //   if (!nftModule) return;
-  //   (async () => {
-  //     const nfts = await nftModule.getAll();
-
-  //     setNfts(nfts);
-  //   })();
-  // }, [nftModule]);
-
-  // const marketPlaceModule = useMemo(() => {
-  //   if (!provider) return;
-
-  //   const sdk = new ThirdwebSDK(provider.getSigner());
-  //   return sdk.getMarketplaceModule(
-  //     "0xE073aAbD1E166Aa23d9562b9D4aB62b57Da9dE9e"
-  //   );
-  // }, [provider]);
-  // get all listings in the collection
   useEffect(() => {
     if (!marketplace) return;
     (async () => {
@@ -108,7 +90,13 @@ const Collection = () => {
   useEffect(() => {
     fetchCollectionData();
   }, [collectionId]);
-  if (isReadingNfts) return <Loading />;
+  if (isLoading)
+    return (
+      <>
+        <Header />
+        <LoadingFullScreen />;
+      </>
+    );
   return (
     <div className='overflow-hidden'>
       <Header />
@@ -181,22 +169,22 @@ const Collection = () => {
             </div>
             <div className={style.collectionStat}>
               <div className={style.statValue}>
-                {/* <img
-                  src='https://storage.opensea.io/files/6f8e2979d428180222796ff4a33ab929.svg'
+                <img
+                  src='https://openseauserdata.com/files/6f8e2979d428180222796ff4a33ab929.svg'
                   alt='eth'
                   className={style.ethLogo}
-                /> */}
+                />
                 {collection?.floorPrice}
               </div>
               <div className={style.statName}>floor price</div>
             </div>
             <div className={style.collectionStat}>
               <div className={style.statValue}>
-                {/* <img
-                  src='https://storage.opensea.io/files/6f8e2979d428180222796ff4a33ab929.svg'
+                <img
+                  src='https://openseauserdata.com/files/6f8e2979d428180222796ff4a33ab929.svg'
                   alt='eth'
                   className={style.ethLogo}
-                /> */}
+                />
                 {collection?.volumeTraded}
               </div>
               <div className={style.statName}>volume traded</div>
@@ -208,15 +196,36 @@ const Collection = () => {
         </div>
       </div>
       <div className='flex flex-wrap '>
-        {nfts.map((nftItem) => (
-          <NFTCard
-            key={nftItem.metadata.id / 1e18}
-            nftItem={nftItem.metadata}
-            title={collection?.title}
-            listings={listings}
-            isLoading={isReadingNfts}
-          />
-        ))}
+        {isLoading ? (
+          <LoadingComponent />
+        ) : (
+          <>
+            {marketplacelistings.length == 0 ? (
+              <div className='h-full w-screen text-white justify-center flex items-center'>
+                No NFTs Present
+              </div>
+            ) : (
+              <>
+                {marketplacelistings.map((nftItem) => (
+                  // <NFTCard
+                  //   key={nftItem.metadata.id / 1e18}
+                  //   nftItem={nftItem.metadata}
+                  //   title={collection?.title}
+                  //   listings={listings}
+                  //   isLoading={isReadingNfts}
+                  // />
+                  <NFTCard
+                    key={nftItem.id}
+                    nftItem={nftItem.asset}
+                    title={collection?.title}
+                    listings={listings}
+                    isLoading={isReadingNfts}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
