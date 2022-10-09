@@ -104,7 +104,7 @@ const MakeOffer = ({ isListed, selectedNft, listings }) => {
       setLoading(false);
    };
    const marketplace = useMarketplace(
-      '0x606879c4a436594Bf66113993B8B65C19675a0C7',
+      '0xE073aAbD1E166Aa23d9562b9D4aB62b57Da9dE9e',
    );
    const { contract } = useContract(
       '0x63F80dA69eF8608A49D8E4883b4114F28DC5d47E',
