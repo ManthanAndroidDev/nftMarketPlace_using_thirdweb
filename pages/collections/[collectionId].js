@@ -49,7 +49,7 @@ const Collection = () => {
   );
   const { data: nfts, isLoading: isReadingNfts } = useNFTs(contract);
   const marketplace = useMarketplace(
-    "0x606879c4a436594Bf66113993B8B65C19675a0C7"
+    "0xE073aAbD1E166Aa23d9562b9D4aB62b57Da9dE9e"
   );
   const { contract: marketplaceContract } = useContract(
     "0x606879c4a436594Bf66113993B8B65C19675a0C7"
